@@ -220,7 +220,7 @@ function genCase(id){
   hints:[`Ask everyone exactly where they were at ${t1}.`,`Someone may have seen another person near the ${X.sd}. Ask about it, and check any alibi that involves a meeting, a call or a record.`],
   kwd,liar,suspects:sus,truth:`${liar} claimed ${cl.c.replace(/^you were/,"they were")}, but ${cl.tr}, as ${ref} confirms. ${wit} saw ${liar} near the ${X.sd} with ${cr.ob} at ${tm}.`};
 }
-const AI_URL="https://hushlightai.cs8ydgh69d.workers.dev/"; // paste your Cloudflare Worker URL here to add free AI replies; leave empty for scripted only
+const AI_URL="https://hushlightai.cs8ydgh69d.workers.dev"; // paste your Cloudflare Worker URL here to add free AI replies; leave empty for scripted only
 let aiOff=0;
 let AI={};try{AI=JSON.parse(localStorage.getItem("hl-ai"))||{}}catch(e){}
 if(!AI.url&&AI_URL)AI={url:AI_URL};

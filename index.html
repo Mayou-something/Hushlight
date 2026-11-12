@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Hushlight: a daily interrogation game. Question the suspects, catch the contradiction, name the liar.">
+<meta name="theme-color" content="#0d0a1a">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hushlight: The Daily Mystery Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;800&family=Instrument+Sans:wght@400;600&family=Special+Elite&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#ece9f5;--bg2:#ddd8ee;--card:#f8f6fd;--ink:#1a1530;--mute:#5d5878;--acc:#d6285a;--gold:#0f766e;--line:#c9c3e0;--hbg:#0d0a1a;--hink:#efeaf8;--hmute:#a59fbf;--hgold:#5eead4;--me:#1a1530;--meink:#f8f6fd;--paper:#efe6d6;--pi:#1d1a12;--ease:cubic-bezier(.23,1,.32,1);color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#130f22;--bg2:#1d1733;--card:#251d40;--ink:#efeaf8;--mute:#a59fbf;--acc:#ff5d73;--gold:#5eead4;--line:#352c55;--me:#5eead4;--meink:#06201c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#130f22;--bg2:#1d1733;--card:#251d40;--ink:#efeaf8;--mute:#a59fbf;--acc:#ff5d73;--gold:#5eead4;--line:#352c55;--me:#5eead4;--meink:#06201c;color-scheme:dark}
+html{scroll-behavior:smooth;scroll-padding-top:calc(64px + env(safe-area-inset-top,0px))}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 "Instrument Sans",system-ui,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--hbg);z-index:10}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.07;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1,h2,.brand,.card h3{font-family:"Bricolage Grotesque","Instrument Sans",system-ui,sans-serif;letter-spacing:-.02em}
+a{color:inherit;text-decoration:none}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--hbg);color:var(--hink);border-bottom:1px solid #ffffff14}
+.navin{max-width:960px;margin:0 auto;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+.brand{font-size:22px;font-weight:800;letter-spacing:.16em}
+.links{display:flex;gap:18px;align-items:center;font-size:14px}
+.links .cta{background:var(--hgold);color:#06201c;padding:8px 16px;border-radius:99px;font-weight:600;display:inline-flex;align-items:center;min-height:44px}
+.hero{position:relative;overflow:hidden;color:var(--hink);padding:92px 20px 100px;background:radial-gradient(circle 380px at var(--mx,72%) var(--my,36%),#5eead438,transparent 70%),radial-gradient(ellipse 50% 90% at 72% 0%,#5eead41f,transparent 70%),var(--hbg)}
+.hero::before{content:"";position:absolute;top:0;left:72%;width:2px;height:44px;background:var(--hgold);opacity:.7}
+.hero::after{content:"";position:absolute;top:44px;left:calc(72% - 22px);width:44px;height:18px;border-radius:44px 44px 4px 4px;background:var(--hgold);box-shadow:0 0 60px 20px #5eead455}
+.heroin{max-width:960px;margin:0 auto;position:relative;z-index:2}
+.kicker,.lens{display:none}
+h1{font-size:clamp(44px,10vw,88px);line-height:.98;margin:0 0 22px;font-weight:800}
+h1 em{font-style:normal;color:var(--hmute)}
+.hero p{max-width:480px;color:var(--hmute);font-size:18px;margin:0 0 28px}
+.ctas{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;background:var(--hgold);color:#06201c;font-weight:600;padding:14px 26px;border-radius:99px;font-size:16px;min-height:44px}
+.btn.ghost{background:transparent;color:var(--hink);border:1px solid #ffffff44}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:30px}
+.chips span{font-size:13px;color:var(--hmute);border:1px solid #ffffff22;padding:5px 12px;border-radius:99px}
+section.s{max-width:960px;margin:0 auto;padding:64px 20px 8px;position:relative;z-index:2}
+h2{font-size:clamp(28px,5vw,42px);margin:0 0 8px;font-weight:800}
+.sub{color:var(--mute);margin:0 0 26px;max-width:560px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:28px}
+.step{border-top:2px solid var(--gold);padding:14px 0 0}
+.step .n{font:800 40px "Bricolage Grotesque",system-ui,sans-serif;color:var(--gold);line-height:1}
+.step h3{margin:8px 0 6px;font-size:19px}
+.step p{margin:0;color:var(--mute);font-size:15px}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;font-size:13px;font-variant-numeric:tabular-nums}
+.stats span{background:var(--bg2);border:1px solid var(--line);padding:5px 12px;border-radius:99px;color:var(--mute)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin-bottom:14px;position:relative;z-index:2}
+.file{background:var(--paper);color:var(--pi);border:0;border-radius:3px 6px 6px 6px;box-shadow:0 22px 40px -24px #000c;font:15px/1.65 "Special Elite","Courier New",monospace;margin-top:34px}
+.file h3{color:var(--pi);font-size:26px}
+.tag{font-size:13px;color:var(--acc);font-weight:600}
+.file .tag{position:absolute;top:-27px;left:14px;background:var(--paper);color:var(--pi);padding:4px 16px;border-radius:8px 8px 0 0;font:600 13px "Instrument Sans",system-ui,sans-serif}
+.card h3{margin:4px 0 8px;font-size:24px;font-weight:800}
+.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px;position:relative;z-index:2}
+.tab{display:flex;gap:10px;align-items:center;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:10px;cursor:pointer;text-align:left;font:inherit;font-size:14px;min-width:0}
+.tab small{display:block;color:var(--mute);font-size:12px}
+.tab.on{border-color:var(--gold);background:var(--bg2);box-shadow:0 0 28px -8px var(--gold)}
+.av{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#1a1030;font-weight:700}
+.log{min-height:200px;max-height:48vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:4px 0}
+.m{display:flex;gap:8px;align-items:flex-end}
+.m.me{justify-content:flex-end}
+.m .av{width:28px;height:28px;font-size:12px}
+.b{max-width:82%;padding:10px 14px;border-radius:16px;font-size:15px;white-space:pre-wrap}
+.b.me{background:var(--me);color:var(--meink);border-bottom-right-radius:4px}
+.b.them{background:var(--bg2);border:1px solid var(--line);border-bottom-left-radius:4px}
+.hint{color:var(--mute);font-size:14px;text-align:center;margin:auto}
+.row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+input{flex:1;font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0}
+button.p{font:600 15px "Instrument Sans",system-ui,sans-serif;border:0;border-radius:12px;padding:12px 20px;background:var(--acc);color:#fff;cursor:pointer}
+button.g{font:600 14px "Instrument Sans",system-ui,sans-serif;border:1px solid var(--line);border-radius:12px;padding:11px 14px;background:var(--card);color:var(--ink);cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.hbox{background:var(--bg2);border:1px dashed var(--gold);border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:14px;position:relative;z-index:2}
+.hbox b{color:var(--gold)}
+.acc{display:grid;gap:8px;margin-top:10px}
+pre{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;font:15px/1.5 "Instrument Sans",system-ui,sans-serif;white-space:pre-wrap;margin:12px 0}
+.good{color:#2e9d4f}.bad{color:var(--acc)}
+.score{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--gold);border-radius:6px 16px 16px 6px;padding:20px 22px;margin-top:14px}
+.score h3{margin:0 0 6px;font-size:18px}
+.score p{margin:6px 0;color:var(--mute);font-size:15px}
+.score b{color:var(--ink)}
+.meter{height:8px;background:var(--bg2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.meter.mini{height:5px;margin-top:5px}
+.meter .fill{height:100%;transition:width .5s var(--ease),background-color .3s var(--ease)}
+.shead{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--mute);margin-bottom:10px;font-variant-numeric:tabular-nums}
+.shead .meter{flex:1}
+.b.conf{border-color:var(--acc);font-weight:600;animation:shake .35s var(--ease)}
+@keyframes shake{25%{transform:translateX(-4px)}60%{transform:translateX(3px)}}
+.wc{font-size:12px;color:var(--mute);margin-top:6px;font-variant-numeric:tabular-nums}
+.fail{border:2px solid var(--acc)}
+.tiers{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.tiers span{background:var(--bg2);border:1px solid var(--line);border-radius:99px;padding:5px 12px;font-size:13px}
+.rule{background:var(--bg2);border:1px dashed var(--gold);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--mute);margin:0 0 18px}
+[hidden]{display:none!important}
+.back{display:inline-block;margin-bottom:18px;color:var(--mute);font-size:14px}
+.back:hover{color:var(--ink)}
+.band{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap;background:var(--hbg);color:var(--hink);padding:28px;border-radius:6px 22px 22px 6px;background-image:radial-gradient(ellipse 50% 120% at 90% 0%,#5eead433,transparent 60%)}
+.band .sub{color:var(--hmute)}
+footer{max-width:960px;margin:64px auto 0;padding:28px 20px 40px;border-top:1px solid var(--line);color:var(--mute);font-size:14px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;position:relative;z-index:2}
+button,.btn,.tab,.cta,input{transition:transform .16s var(--ease),background-color .16s var(--ease),border-color .16s var(--ease),box-shadow .16s var(--ease),opacity .16s var(--ease)}
+button:active:not(:disabled),.btn:active,.tab:active,.cta:active{transform:scale(.97)}
+button,.tab,input{min-height:44px}
+@media (hover:hover) and (pointer:fine){button.g:hover:not(:disabled),.tab:hover{border-color:var(--gold)}.btn:hover{transform:translateY(-1px)}.btn:active{transform:scale(.97)}}
+@keyframes rise{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.log .m:last-child{animation:rise .22s var(--ease) both}
+.heroin>*{animation:rise .5s var(--ease) both}
+.heroin>*:nth-child(3){animation-delay:70ms}.heroin>*:nth-child(4){animation-delay:140ms}.heroin>*:nth-child(5){animation-delay:210ms}.heroin>*:nth-child(6){animation-delay:280ms}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+.pills{display:flex;flex-wrap:wrap;gap:10px}
+.pills span{background:var(--card);border:1px solid var(--line);padding:8px 16px;border-radius:99px;font-size:14px}
+.pills span b{color:var(--gold)}
+.card h3.good,.card h3.bad{display:inline-block;border:3px solid currentColor;padding:4px 14px;border-radius:6px;font-size:22px;transform:rotate(-3deg);animation:stamp .45s var(--ease) both}
+@keyframes stamp{from{opacity:0;transform:rotate(-3deg) scale(1.7)}}
+</style>
+</head>
+<body>
+<nav class="nav"><div class="navin"><a class="brand" href="#top">HUSHLIGHT</a><div class="links"><a href="#how">How it works</a><a class="cta" href="#play">Play</a></div></div></nav>
+
+<div id="home"><header class="hero" id="top"><div class="lens">🔍</div><div class="heroin">
+  
+  <h1>Everyone lies.<br><em>Find the one who does.</em></h1>
+  <p>3 to 6 suspects. One liar. Question them in your own words, catch the contradiction, and make your accusation. A fresh case every day.</p>
+  <div class="ctas"><a class="btn" href="#play">Play today’s case</a><a class="btn ghost" href="#how">How it works</a></div>
+  <div class="chips"><span>5 minutes</span><span>New case daily</span><span>Free to play</span></div>
+</div></header>
+
+<section class="s" id="how">
+  <h2>How it works</h2>
+  <p class="sub">No special knowledge needed. Just good questions and a sharp ear.</p>
+  <div class="steps">
+    <div class="step"><div class="n">1</div><h3>Read the case file</h3><p>A murder, robbery, fraud or threat, a timeline, and the people who were there.</p></div>
+    <div class="step"><div class="n">2</div><h3>Interrogate</h3><p>Type any question. The suspects answer in character, and one of them is lying.</p></div>
+    <div class="step"><div class="n">3</div><h3>Accuse</h3><p>Spot the contradiction, name the liar, and share your score. Fewer questions means a higher score.</p></div>
+  </div>
+  <div class="score">
+    <h3>Scoring</h3>
+    <p>Ask just <b>1 question per suspect</b> and name the liar for a perfect <b>100/100</b>. Every extra question lowers your score by about 7 points.</p>
+    <div class="tiers"><span>1 each · 100</span><span>2 each · 80</span><span>3 each · 60</span><span>4 each · 40</span><span>5 each · 20</span></div>
+    <p>A hint costs as much as one question per suspect (20 points). A wrong accusation fails the case: 0/100, and your streak resets. You need at least 2 questions before you can accuse.</p>
+    <p><b>Stress meter:</b> every suspect has one. Friendly, calm questions lower it. Sharp questions, threats, and facts that expose a lie raise it, and a liar’s stress climbs a little faster. Push someone too far and they confess, even if they’re innocent. A false confession won’t save you, so pick wisely.</p>
+    <p><b>Questions only:</b> you can only talk, with no actions. Keep each question to 50 words or fewer and ask one thing at a time. The mood emoji next to each name shows how they’re feeling, from 😊 calm to 😨 panicking.</p>
+  </div>
+</section>
+
+<section class="s"><h2>Pick your crime scene</h2><p class="sub">Every case is a different crime with a different liar, so no two games feel the same.</p><div class="pills"><span>Murder</span><span>Bank robbery</span><span>Art heist</span><span>Wire fraud</span><span>Threats</span></div><p class="sub" style="margin-top:22px">Five levels, from 3 clear suspects to 6 calm liars:</p><div class="pills"><span><b>Easy</b> 3 suspects</span><span><b>Medium</b> 4</span><span><b>Hard</b> 4, evasive</span><span><b>Very hard</b> 5, shaky witness</span><span><b>Impossible</b> 6, half-truths</span></div></section>
+<section class="s"><div class="band"><div><h2>Today’s case is waiting</h2><p class="sub" style="margin:0">10,000 cases, five difficulty levels, one liar.</p></div><a class="btn" href="#play">Play now</a></div></section>
+</div>
+
+<div id="playpage" hidden>
+<section class="s" id="play">
+  <a class="back" href="#top">← Back to home</a>
+  <h2>Today’s case</h2>
+  <p class="sub">Pick a difficulty. Everyone gets the same case at each level today, so don’t spoil it for your friends.</p>
+  <div class="rule"><b>Scoring:</b> 1 question per suspect = 100/100. 2 each = 80, 3 each = 60, and so on. Each hint costs 20 points and a wrong accusation fails the case. Stress meter: kind words calm a suspect, sharp questions raise it. Too much stress and they confess, even if innocent, and accusing a false confessor fails the case. Questions only (no actions), 50 words max each.</div>
+  <details class="rule" id="aicfg"><summary>Free AI replies (optional)</summary>
+<p>Scripted replies work with no setup. For AI replies, pick a free provider and paste your own free key, or point to your own Cloudflare worker. Settings stay in this browser. This only works on a copy you host yourself, and if the AI fails the game falls back to scripted replies.</p>
+<div class="row"><button class="g" data-p="groq">Groq</button><button class="g" data-p="gemini">Gemini</button><button class="g" data-p="worker">My worker</button></div>
+<div class="row"><input id="aiu" placeholder="Endpoint URL"><input id="aim" placeholder="Model (not needed for a worker)"><input id="aik" type="password" placeholder="Free API key (not needed for a worker)"></div>
+<div class="row"><button class="p" id="ais">Save</button><button class="g" id="aic">Turn off</button></div><div class="wc" id="aist"></div></details>
+<div id="diffbar"></div><div id="game"></div>
+</section>
+</div>
+
+<footer><div><b class="brand">HUSHLIGHT</b> · A new case every day</div><div>Come back tomorrow, detective.</div></footer>
+
+<script>
+const DIFFS=[["easy",3],["medium",4],["hard",4],["very hard",5],["impossible",6]];
+const COLORS=["#ff5d73","#5eead4","#a78bfa","#fbbf24","#60a5fa","#f472b6"];
+const DAY=Math.floor(Date.now()/86400000);
+const CASES=[null];
+let DIFF="easy",isDaily=true,caseNo=1,caseIdx=0;
+let sample=true,active=0,logs=[],qs=0,hints=0,finished=false,busy=false,accusing=false,result=null,stress=[],confessed=[],asked=[];
+const FN=["Elena","Marcus","Priya","Daniel","Sofia","Victor","Hana","Omar","Ingrid","Raj","Lucia","Tobias","Amara","Felix","Nadia","Kenji","Rosa","Dmitri","Chloe","Mateo","Yara","Silas","Leila","Bruno","Greta","Hugo","Zara","Anders","Mina","Caleb"];
+const LN=["Voss","Bell","Nair","Cruz","Hart","Okafor","Lind","Reyes","Moreau","Kane","Sato","Frost","Duran","Quinn","Petrov","Shah","Rowe","Vance","Ibarra","Cole","Novak","Ferreira","Walsh","Tran","Mercer","Hale","Lowe","Stone","Brandt","Ortega"];
+const BN=["Hartwell","Ashford","Blackwood","Kingsley","Redfern","Calloway","Thornfield","Marlowe"];
+const PN=["Blue Heron","Silent Harbor","Red Door","Winter Garden","Golden Hour","Broken Crown"];
+const SE=["you have been secretly job hunting","you owe a friend money and are dodging them","you napped in your car during a long unauthorised break","you were arguing with your ex on a private phone call","you once lied on your CV","you were secretly reading a coworker's messages","you are quietly planning to quit","you skipped a mandatory safety check","you were gambling online on your phone","you are hiding a small debt from your family"];
+const BZ=["working alone in a back office","in the break room making coffee","on the phone with your family","greeting visitors in the lobby","reviewing paperwork at a front desk","fixing a jammed printer"];
+const CR=[
+{ti:"Murder at {B} House",ev:"{V}, owner of {B} House, was found dead in the {sc}. Police say it was murder, committed between {t1} and {t2}",sc:"study",sd:"back staircase",ob:"a long coat bundled around something heavy",rl:["Butler","Business partner","Nephew","Housekeeper","Family doctor","Neighbour"]},
+{ti:"The {B} Bank Robbery",ev:"The vault of {B} Bank was emptied of $400,000 between {t1} and {t2} while the alarm was switched off",sc:"vault corridor",sd:"loading dock",ob:"a large black duffel bag",rl:["Teller","Branch manager","Security guard","Cleaner","Loan officer","Courier"]},
+{ti:"The {P} Heist",ev:"The painting “{P}” was stolen from the {B} Gallery between {t1} and {t2}",sc:"east wing",sd:"service corridor",ob:"a long cardboard tube",rl:["Curator","Security guard","Caterer","Art dealer","Intern","Photographer"]},
+{ti:"The {B} Wire Fraud",ev:"$250,000 was wired out of {B} Ltd's accounts from the {sc} between {t1} and {t2}, using a stolen login",sc:"finance office",sd:"server room",ob:"a laptop hidden under a jacket",rl:["Accountant","CFO's assistant","IT technician","Auditor","Intern","Office manager"]},
+{ti:"The {B} Threats",ev:"Threatening notes telling {V} to resign or face the consequences were left in the {sc} of {B} between {t1} and {t2}",sc:"executive floor",sd:"stairwell",ob:"an envelope and a black marker",rl:["Assistant","Rival director","Mail clerk","Janitor","HR manager","Driver"]}
+];
+function rng(s){let a=Math.imul(s,2654435761)>>>0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function genCase(id){
+ const di=Math.min(4,Math.floor((id-1)/2000)),dk=DIFFS[di][0],n=DIFFS[di][1],R=rng(id);
+ const pk=a=>a[Math.floor(R()*a.length)];
+ const sh=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(R()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+ const cr=CR[Math.floor(R()*CR.length)];
+ const fn=sh(FN),ln=sh(LN),nm=fn.slice(0,n+1).map((x,i)=>x+" "+ln[i]);
+ const roles=sh(cr.rl),sec=sh(SE),bz=sh(BZ),perm=sh([...Array(n).keys()]);
+ const f=m=>{const h=Math.floor(m/60),x=m%60;return (h%12||12)+":"+String(x).padStart(2,"0")+(h<12?" am":" pm")};
+ const T=(9+Math.floor(R()*8))*60+Math.floor(R()*5)*10,t1=f(T),tm=f(T+5);
+ const X={B:pk(BN),P:pk(PN),V:nm[n],t1,t2:f(T+30),sc:cr.sc,sd:cr.sd};
+ const fill=s=>s.replace(/\{(\w+)\}/g,(_,k)=>X[k]);
+ const [L,W,F]=perm,liar=nm[L],wit=nm[W],ref=nm[F],mt=pk(["budget","planning","safety","staff"]);
+ const CL=[
+  {c:`you were in the ${f(T-20)} ${mt} meeting in Room B until ${f(T+45)} and never left`,rf:`You cancelled the ${f(T-20)} ${mt} meeting at ${f(T-35)} because the host fell ill, and you emailed everyone. Mention it only if asked about that meeting.`,tr:"that meeting had been cancelled"},
+  {c:`you were at your desk on a long client call the whole time`,rf:`Your desk is next to ${liar}'s. From ${f(T-5)} to ${f(T+30)} ${liar}'s chair was empty and the coat was gone. Mention it only if asked about ${liar}, their desk, or the client call.`,tr:"their desk was empty"},
+  {c:`you were stuck in traffic and only reached the building at ${f(T+40)}`,rf:`You work the car park gate. ${liar}'s car came in at ${f(T-25)}, well before the crime. Mention it only if asked about the car park, parking, traffic or arrival times.`,tr:"the gate log shows their car arrived at "+f(T-25)}
+ ];
+ const cl=pk(CL),ev=di>=2?" You are evasive: deflect or answer with a question at first, and only give details if asked directly a second time.":"";
+ const sus=Array(n);
+ sus[L]={name:liar,role:roles[0],liar:true,priv:`At about ${tm} you committed the crime and left through the ${X.sd} carrying ${cr.ob}. Your cover story: ${cl.c}. `+(di==4?`Mix truth into your story: freely admit harmless true details such as your job, who you work with, and that you passed the ${X.sc} earlier on normal business, but keep your alibi for ${t1} intact. Stay very calm and unshakable until cornered. `:`You never went near the ${X.sd}. `)+`You are calm and a little too polite.`};
+ sus[W]={name:wit,role:roles[1],liar:false,priv:`At about ${tm} you were near the ${X.sd} and saw ${liar} hurry past carrying ${cr.ob}, heading away from the ${X.sc}. `+(di==3?`You are only about 70% sure it was them, so hedge with "I think". If the detective is harsh or pushy you clam up and refuse to say more; if kind and patient you share what you saw. `:`You are sure of what you saw. `)+`Only mention it if asked about the ${X.sd}, who you saw, or what happened around ${t1}. Secret (reveal only if pressed): ${sec[0]}.`+ev};
+ sus[F]={name:ref,role:roles[2],liar:false,priv:cl.rf+` Secret (reveal only if pressed): ${sec[1]}.`+ev};
+ for(let i=3;i<n;i++)sus[perm[i]]={name:nm[perm[i]],role:roles[i],liar:false,priv:(i==3&&di>=2?`At ${t1} you were ${bz[i]}. You also quietly walked past the ${X.sd} at ${f(T-10)} on an embarrassing errand and deny it unless pressed hard. `:`At ${t1} you were ${bz[i]}, with nothing to hide about the crime. `)+`Secret (reveal only if pressed): ${sec[i]}.`+ev};
+ const cv=t=>t.replace(/\byou are\b/g,"I am").replace(/\byou were\b/g,"I was").replace(/\byour\b/g,"my").replace(/\byou\b/g,"I");
+ const rfs=[`The ${f(T-20)} ${mt} meeting? I cancelled it at ${f(T-35)} because the host fell ill, and I emailed everyone.`,`${liar}'s chair was empty and the coat was gone from ${f(T-5)} to ${f(T+30)}. I sit right next to them.`,`I run the car park gate. ${liar}'s car came in at ${f(T-25)}, well before it happened.`];
+ const kws=[/meeting|cancel|room b|budget|planning|safety|staff/,/desk|call|client|chair|coat/,/car|park|traffic|arriv|gate/],ci=CL.indexOf(cl);
+ sus[L].say={kind:"liar",alibi:cv(cl.c)+".",deny:di==4?`I passed the ${X.sc} earlier on normal business, that's all.`:`I never went near the ${X.sd}.`};
+ sus[W].say={kind:"wit",sight:di==3?`I think I saw ${liar} hurrying past with ${cr.ob}, heading away from the ${X.sc}. I'm not completely sure.`:`I saw ${liar} hurry past with ${cr.ob}, heading away from the ${X.sc} around ${tm}.`,alibi:`I was near the ${X.sd} around then.`,sec:cv(sec[0])};
+ sus[F].say={kind:"ref",fact:rfs[ci],kw:kws[ci].source,alibi:"I was doing my usual work at the time.",sec:cv(sec[1])};
+ for(let i=3;i<n;i++)sus[perm[i]].say={kind:"by",alibi:`At ${t1} I was ${bz[i]}.`,sec:cv(sec[i]),herring:i==3&&di>=2,errand:`Okay, I walked past the ${X.sd} around ${f(T-10)} on a private errand. That's all it was.`};
+ const kwd=(X.sd+" "+X.sc).split(" ").filter(w=>w.length>3&&!["back","room","floor","office","east","vault"].includes(w));
+ return {id,difficulty:dk,sd:X.sd,title:fill(cr.ti),intro:fill(cr.ev)+`. ${n} people had access. One of them is lying.`,pub:fill(cr.ev)+`. The ${X.sc} is next to the ${X.sd}.`,
+  hints:[`Ask everyone exactly where they were at ${t1}.`,`Someone may have seen another person near the ${X.sd}. Ask about it, and check any alibi that involves a meeting, a call or a record.`],
+  kwd,liar,suspects:sus,truth:`${liar} claimed ${cl.c.replace(/^you were/,"they were")}, but ${cl.tr}, as ${ref} confirms. ${wit} saw ${liar} near the ${X.sd} with ${cr.ob} at ${tm}.`};
+}
+const AI_URL=""; // paste your Cloudflare Worker URL here to add free AI replies; leave empty for scripted only
+let aiOff=0;
+let AI={};try{AI=JSON.parse(localStorage.getItem("hl-ai"))||{}}catch(e){}
+if(!AI.url&&AI_URL)AI={url:AI_URL};
+function setAiStatus(t){const e=document.getElementById("aist");if(e)e.textContent=t}
+async function llm(prompt){
+ if(!AI.url||Date.now()<aiOff)return null;
+ try{
+  const oa=!!AI.key,r=await fetch(AI.url,{method:"POST",headers:oa?{"content-type":"application/json",authorization:"Bearer "+AI.key}:{"content-type":"application/json"},body:JSON.stringify(oa?{model:AI.model,messages:[{role:"user",content:prompt}],max_tokens:120}:{prompt})});
+  if(!r.ok)throw 0;const o=await r.json();return(oa?o.choices[0].message.content:o.text)||null
+ }catch(e){aiOff=Date.now()+600000;setAiStatus("AI unavailable, using scripted replies for now.");return null}
+}
+function script(c,s,text,st,asked){
+ const t=text.toLowerCase(),y=s.say,by=y.kind,di=c.difficulty,rnd=a=>a[Math.floor(Math.random()*a.length)],nm=c.liar.toLowerCase().split(" ");
+ const kind=/relax|calm|sorry|thank|please|take your time|appreciate|it'?s ok|no rush/.test(t),hi=/^(hi|hello|hey|good (morning|afternoon|evening))\b/.test(t),
+  mean=/idiot|stupid|shut up|kill|hurt|threat|or else|jail|prison|arrest|make you/.test(t),accuse=/liar|lying|\blie\b|confess|admit|you did it|guilty|know you did/.test(t),
+  loc=c.kwd.some(w=>t.includes(w)),carry=/tube|bag|laptop|envelope|marker|coat|towel|carry|carrying/.test(t),
+  sight=/\bsee\b|\bsaw\b|notice|witness|anyone|anybody|suspicious|hear|carry|carrying/.test(t)||nm.some(w=>new RegExp("\\b"+w+"\\b").test(t)),
+  where=/where|alibi|doing|during|whereabouts|\d\s?(am|pm)|when the|at that time/.test(t),press=/secret|hiding|hide|nervous|honest|truth|really/.test(t);
+ const confront=by==="liar"&&loc&&carry;
+ let d=hi?-5:2; if(kind&&!where&&!loc&&!sight&&!accuse)d=-8; else if(confront)d=32; else if(mean)d=16; else if(accuse)d=12; else if(where)d=6;
+ const evasive=(k,line)=>{if((di==="hard"||di==="impossible")&&by!=="liar"){s._d=s._d||{};if(!s._d[k]){s._d[k]=1;return rnd(["Why do you ask?","Why does that matter?","Hm. What are you getting at?"])}}return line};
+ const small=/shirt|weather|favou?rite|how are you|joke|think about|nice|haircut|pretty|cute|love your|like your/.test(t),smalltalk=rnd(["Ha. That's a bit random, detective. Shall we get back to the case?","I'm not sure what my opinion has to do with this.","Sure, if you say so. What do you actually want to ask me?"]);
+ const gen=small?smalltalk:rnd(["I'm not sure what you're asking. Try asking about that time.","Can you be more specific?","I don't know much about that."]);
+ let r;
+ if(mean)r=by==="wit"&&di==="very hard"?"I can't... I'm not sure of anything now.":rnd(["I'm calling security if you keep that up.","Back off. I'm not answering that.","Watch your tone, detective."]);
+ else if(confront)r=rnd(["That's... that's not what happened.","Who told you that? That's a lie.","I don't know what you're talking about."]);
+ else if(y.sec&&press&&(st>=40||asked>=3))r="Fine. "+y.sec[0].toUpperCase()+y.sec.slice(1)+". Happy now?";
+ else if((kind||hi)&&!where&&!loc&&!sight)r=rnd(["Thanks. Ask me whatever you need.","Okay. I'll help if I can."]);
+ else if(by==="liar")r=accuse?rnd(["That's absurd. I've told you where I was.","Careful with accusations, detective."]):(loc||sight)?y.deny:where?y.alibi:small?gen:rnd(["I've been completely straight with you.","Is there something specific you want to know?"]);
+ else if(by==="wit")r=di==="very hard"&&accuse?"I... I don't want to say anything else.":(loc||sight)?evasive("s",y.sight):where?y.alibi:gen;
+ else if(by==="ref")r=(new RegExp(y.kw).test(t)||sight)?evasive("f",y.fact):where?y.alibi:gen;
+ else r=(loc&&y.herring)?((st>=35||(s._h=(s._h||0)+1)>1)?y.errand:"I didn't go anywhere near there."):(loc||sight)?"I didn't see anything useful.":where?y.alibi:gen;
+ if(r!==y.errand&&!mean)r=(st>=60?rnd(["Why are you pressing me? ","I— okay. ","Stop. Just— "]):st>=30?rnd(["Honestly? ","Listen. ","Look. ",""]):"")+r;
+ return {delta:d,text:r};
+}
+function buildBar(){const b=document.getElementById("diffbar");b.replaceChildren();DIFFS.forEach(([d])=>{const x=el("button",d===DIFF?"p":"g",d[0].toUpperCase()+d.slice(1));x.style.margin="0 6px 8px 0";x.onclick=()=>loadCase(d,false);b.append(x)})}
+function loadCase(d,random){DIFF=d;isDaily=!random;const di=DIFFS.findIndex(x=>x[0]===d);caseNo=di*2000+1+(random?Math.floor(Math.random()*2000):(DAY*7919+di*131)%2000);CASES[0]=genCase(caseNo);buildBar();reset(0)}
+const game = document.getElementById("game");
+
+function getStreak(){ try { return JSON.parse(localStorage.getItem("alibi-streak")) || {last:-1,n:0}; } catch(e){ return {last:-1,n:0}; } }
+function saveStreak(win){
+  try {
+    const s = getStreak();
+    if (s.last === DAY) return s;
+    const ns = {last:DAY, n: win ? (s.last === DAY - 1 ? s.n + 1 : 1) : 0};
+    localStorage.setItem("alibi-streak", JSON.stringify(ns));
+    return ns;
+  } catch(e){ return {last:DAY, n: win ? 1 : 0}; }
+}
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+function avatar(i, name){ const a = el("div", "av", name[0]); a.style.background = COLORS[i % 6]; return a; }
+
+const MAXW = 50;
+let refocus = false;
+function wc(t){ const m = t.trim().match(/\S+/g); return m ? m.length : 0; }
+function badAction(t){ return /\[[^\]]*\]|\*[^*]+\*|\([^)]*\)/.test(t); }
+function mood(v, conf){ return conf ? "😭" : v < 15 ? "😊" : v < 30 ? "🙂" : v < 45 ? "😐" : v < 60 ? "😟" : v < 75 ? "😰" : "😨"; }
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+function stressLabel(v){ return v < 30 ? "Calm" : v < 60 ? "Tense" : v < 85 ? "Rattled" : "Breaking"; }
+function parseOut(t){
+  const m = t.match(/^\s*STRESS:\s*([+-]?\d+)[^\n]*\n?([\s\S]*)$/i);
+  if (m) return {delta: parseInt(m[1], 10), text: m[2].trim()};
+  if (/^\s*(S|ST|STR|STRE|STRES|STRESS)(:.*)?$/i.test(t) && t.indexOf("\n") < 0) return {delta: null, text: ""};
+  return {delta: null, text: t.trim()};
+}
+function meter(v, mini){
+  const w = el("div", "meter" + (mini ? " mini" : "")), f = el("div", "fill");
+  f.style.width = v + "%";
+  f.style.background = v >= 85 ? "var(--acc)" : v >= 60 ? "#e67e22" : v >= 30 ? "#facc15" : "#34d399";
+  w.append(f); return w;
+}
+async function applyStress(delta, qtext, reply, s){
+  const c = CASES[caseIdx], i = c.suspects.indexOf(s);
+  let d = clamp(typeof delta === "number" ? delta : 0, -15, 40);
+  if (d > 0 && s.liar) d = Math.round(d * 1.2);
+  asked[i]++;
+  if (d >= 0 && asked[i] > 3) d += s.liar ? 2 : 1;
+  stress[i] = clamp(stress[i] + d, 0, 100);
+  if (stress[i] >= 85 && !confessed[i]) {
+    const p = `You are ${s.name}, ${s.role}, in a detective mystery game. The pressure is too much and you break down and confess out loud to the crime, in 1 to 3 short, emotional spoken sentences. ${s.liar ? "You really did it, so admit it in your own words and give a brief true reason." : "You are actually innocent, but you are so stressed and scared that you blurt out a false confession just to make it stop. Keep it desperate and vague, with no real details only the culprit would know."}\nCase facts: ${c.pub}\nWhat only you know: ${s.priv}\nThe detective just said: ${qtext}\nOutput only your spoken words.`;
+    let t = "";
+    t = ((await llm(p)) || "").trim();
+    reply.text = t || (s.liar ? "Okay! Okay, it was me. I panicked and slipped out through the " + c.sd + ". I did it." : "Fine! I did it, just please stop!");
+    reply.conf = true; confessed[i] = true;
+  }
+}
+function score(){ const n = CASES[0].suspects.length, eff = qs + hints * n; return Math.max(0, Math.min(100, Math.round(100 - (eff - n) * 20 / n))); }
+function reset(idx){
+  caseIdx = idx; active = 0; qs = 0; hints = 0; finished = false; busy = false; accusing = false; result = null; const n = CASES[idx].suspects.length; stress = Array(n).fill(0); confessed = Array(n).fill(false); asked = Array(n).fill(0);
+  logs = CASES[idx].suspects.map(() => []);
+  render();
+}
+
+function render(){
+  const c = CASES[caseIdx];
+  game.replaceChildren();
+
+  const st = el("div", "stats");
+  [ "Case #" + caseNo, DIFF[0].toUpperCase() + DIFF.slice(1), qs + " question" + (qs === 1 ? "" : "s"), "💡 " + hints + "/2 hints", "🎯 score now: " + score(), "🔥 streak " + getStreak().n ].forEach(t => st.append(el("span", "", t)));
+  game.append(st);
+
+  const file = el("div", "card file");
+  file.append(el("div", "tag", "Case file"), el("h3", "", c.title), el("div", "", c.intro));
+  game.append(file);
+
+  if (hints > 0) {
+    const hb = el("div", "hbox");
+    hb.append(el("b", "", "Hints: "), document.createTextNode(c.hints.slice(0, hints).join(" ")));
+    game.append(hb);
+  }
+
+  const tabs = el("div", "tabs");
+  c.suspects.forEach((s, i) => {
+    const t = el("button", "tab" + (i === active ? " on" : ""));
+    const info = el("div"); info.style.flex = "1"; info.style.minWidth = "0"; info.append(document.createTextNode(s.name + " " + mood(stress[i], confessed[i])), el("small", "", confessed[i] ? "🔒 confessed" : s.role), meter(stress[i], true));
+    t.append(avatar(i, s.name), info);
+    t.onclick = () => { active = i; render(); };
+    tabs.append(t);
+  });
+  game.append(tabs);
+
+  const chat = el("div", "card");
+  const log = el("div", "log"); log.id = "log"; log.setAttribute("aria-live", "polite");
+  const L = logs[active], s = c.suspects[active];
+  const sh = el("div", "shead");
+  sh.append(el("span", "", mood(stress[active], confessed[active]) + " Stress"), meter(stress[active]), el("span", "", Math.round(stress[active]) + "%, " + (confessed[active] ? "Confessed" : stressLabel(stress[active]))));
+  chat.append(sh);
+  if (!L.length) log.append(el("div", "hint", "Ask " + s.name + " anything. Look for stories that don’t add up."));
+  L.forEach(m => {
+    const row = el("div", "m" + (m.me ? " me" : ""));
+    if (!m.me) row.append(avatar(active, s.name));
+    row.append(el("div", "b " + (m.me ? "me" : "them") + (m.conf ? " conf" : ""), m.text));
+    log.append(row);
+  });
+  chat.append(log);
+
+  if (!finished) {
+    const row = el("div", "row");
+    const inp = el("input"); inp.placeholder = "Ask " + s.name + "…"; inp.maxLength = 400;
+    const go = el("button", "p", "Ask"); go.disabled = busy || !sample || confessed[active]; inp.disabled = confessed[active]; if (confessed[active]) inp.placeholder = s.name + " has confessed. Is it the whole truth?";
+    const cnt = el("div", "wc", "0/" + MAXW + " words, talk only, no actions");
+    const check = () => {
+      const n = wc(inp.value), bad = badAction(inp.value);
+      cnt.textContent = bad ? "Questions only: remove the action in brackets, parentheses or asterisks." : n + "/" + MAXW + " words" + (n > MAXW ? ", too long, ask one thing at a time" : ", talk only, no actions");
+      cnt.style.color = (bad || n > MAXW) ? "var(--acc)" : "";
+      go.disabled = busy || !sample || confessed[active] || bad || n > MAXW || n === 0;
+      return !(bad || n > MAXW);
+    };
+    inp.oninput = check;
+    const send = () => { if (check() && !go.disabled) ask(inp.value); };
+    go.onclick = send;
+    inp.onkeydown = e => { if (e.key === "Enter") send(); };
+    row.append(inp, go); chat.append(row); chat.append(cnt); check();
+
+    const row2 = el("div", "row");
+    const hb = el("button", "g", hints < 2 ? "💡 Hint (" + (2 - hints) + " left, −20 points)" : "No hints left");
+    hb.disabled = hints >= 2;
+    hb.onclick = () => { hints++; render(); };
+    const ab = el("button", "g", "I know who did it");
+    ab.disabled = qs < 2;
+    ab.onclick = () => { accusing = true; render(); };
+    row2.append(hb, ab); chat.append(row2);
+    if (!sample) chat.append(el("div", "hint", "Tap Ask and allow Claude access when prompted so the suspects can talk."));
+  }
+  game.append(chat);
+
+  if (accusing && !finished) {
+    const box = el("div", "card");
+    box.append(el("div", "tag", "Who’s the liar?"));
+    const g = el("div", "acc");
+    c.suspects.forEach((x, i) => { const b = el("button", "g", "Accuse " + x.name); b.onclick = () => accuse(i); g.append(b); });
+    const cancel = el("button", "g", "Not yet"); cancel.onclick = () => { accusing = false; render(); };
+    g.append(cancel); box.append(g); game.append(box);
+  }
+
+  if (finished && result) {
+    const r = el("div", "card" + (result.ok ? "" : " fail"));
+    r.append(el("h3", result.ok ? "good" : "bad", result.ok ? "Case closed. You got them." : "Case failed. The liar walks free."));
+    r.append(el("h3", "", "Score: " + result.sc + "/100"));
+    if (result.reason) r.append(el("p", "", result.reason));
+    r.append(el("p", "hint", "Final stress: " + c.suspects.map((x, j) => x.name.split(" ")[0] + " " + Math.round(stress[j]) + "%").join(" · ")));
+    const liar = c.suspects.find(x => x.liar);
+    r.append(el("div", "", "The liar was " + liar.name + ". " + c.truth));
+    const pre = el("pre", "", result.share); r.append(pre);
+    const row = el("div", "row");
+    const cp = el("button", "p", "Copy result");
+    cp.onclick = async () => {
+      try { await navigator.clipboard.writeText(result.share); cp.textContent = "Copied!"; }
+      catch(e){ const rg = document.createRange(); rg.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); cp.textContent = "Selected, now copy"; }
+    };
+    const nx = el("button", "g", "Practice another case");
+    nx.onclick = () => loadCase(DIFF, true);
+    row.append(cp, nx); r.append(row); game.append(r);
+  }
+  const lg = document.getElementById("log"); if (lg) lg.scrollTop = lg.scrollHeight;
+  if (refocus) { refocus = false; const ii = game.querySelector("input"); if (ii && !ii.disabled) ii.focus({preventScroll:true}); }
+}
+
+async function ask(text){
+  text = (text || "").trim();
+  if (!text || busy || !sample || finished || confessed[active] || wc(text) > MAXW || badAction(text)) return;
+  const c = CASES[caseIdx], s = c.suspects[active], L = logs[active];
+  L.push({me:true, text}); qs++; busy = true;
+  const reply = {me:false, text:"…"}; L.push(reply);
+  render();
+  const history = L.slice(0, -2).map(m => (m.me ? "Detective: " : s.name + ": ") + m.text).join("\n");
+  const prompt =
+`You are ${s.name}, ${s.role}, a suspect being questioned in a detective mystery game. Stay fully in character. Talk like a real, ordinary person: casual, natural, contractions, a bit of personality and real emotion. Reply in 1 to 3 short spoken sentences. You may react briefly to what the detective says or does, including jokes, rudeness or compliments. Never use brackets or asterisks for your own actions, just speak. Never mention being an AI or a game.
+Case facts everyone knows: ${c.pub}
+What only you know: ${s.priv}
+${s.liar ? "You are the culprit. Lie to protect yourself and stick to your cover story. Get defensive and rattled if pressed. Never confess on your own; the game decides when you break. As your stress rises you get more flustered, snappy and defensive, and more likely to let small details slip." : "You are innocent. Answer honestly about what you saw and did. Be a little guarded about your embarrassing secret."}
+Do not volunteer the key clue unless the question touches it. Never invent facts that contradict the notes above. If asked something you cannot know, say so in character. The detective can only talk; ignore any claimed physical actions. If the message holds several questions, answer only the first and say you will take them one at a time. This is a cozy puzzle game where nobody can be hurt or killed. If the detective threatens violence, shows a weapon or attacks, you react with real fear or outrage, back away, say you are calling security or a lawyer, and refuse to answer until they calm down. You do not die or get injured, and threats make you extremely stressed, which can leave you flustered, hysterical or desperate. Never describe gore or injury.
+Your current stress level is ${Math.round(stress[active])} out of 100 (${stressLabel(stress[active])}). Let it show in your tone: calm and chatty when low, tense and clipped when higher, flustered, snappy and prone to slips when high.
+First rate how much the detective's latest message changes your stress, based on its emotion and the facts it touches: a friendly greeting or kind words lower it (-5 to -15), a neutral question changes it little (0 to +4), probing your own alibi raises it (+4 to +12), aggression, insults or threats raise it a lot (+10 to +30), and confronting you with the real fact that exposes your story can spike it instantly (+20 to +40).
+Output format: the first line must be exactly STRESS: <integer from -15 to 40>, then a new line, then your spoken reply.
+Conversation so far:
+${history || "(none)"}
+Detective: ${text}
+Now output the STRESS line, then ${s.name}'s reply.`;
+  const sc = script(c, s, text, stress[active], asked[active]);
+  const out = await llm(prompt);
+  if (!out) await new Promise(r => setTimeout(r, 500 + Math.random() * 500));
+  let po = out ? parseOut(out) : null;
+  if (!po || !po.text) po = sc; else if (po.delta == null) po.delta = sc.delta;
+  reply.text = po.text.replace(new RegExp("^" + s.name + ":\\s*"), "").trim();
+  await applyStress(po.delta, text, reply, s);
+  busy = false; refocus = true; render();
+}
+
+function accuse(i){
+  const c = CASES[caseIdx], ok = c.suspects[i].liar;
+  const sc = ok ? score() : 0;
+  const nm = c.suspects[i].name, pct = Math.round(stress[i]);
+  let reason = "";
+  if (ok) reason = confessed[i] ? "You cracked the real liar. " + nm + " confessed under pressure." : "";
+  else if (confessed[i]) reason = "You stressed the wrong person too much. " + nm + " was innocent, but the pressure got so high (" + pct + "% stress) that they confessed just to make it stop. A confession under pressure isn’t proof.";
+  else if (stress[i] >= 60) reason = "You leaned hard on " + nm + " (" + pct + "% stress), but they were innocent. Being nervous isn’t the same as being guilty.";
+  else reason = "You accused the wrong person. Look for a story that doesn’t add up, not just who sounds nervous.";
+  const stk = isDaily ? saveStreak(ok) : getStreak();
+  result = {ok, sc, reason, share: "Hushlight #" + caseNo + " (" + DIFF + ") 🔍\n" + (ok ? "Solved in " : "Fooled after ") + qs + " question" + (qs === 1 ? "" : "s") + (hints ? " · 💡" + hints : "") + "\n" + (ok ? "Score: " + sc + "/100" : "❌ Case failed") + (stk.n > 1 ? "\n🔥 " + stk.n + "-day streak" : "")};
+  finished = true; accusing = false; render();
+}
+
+function route(){
+  const h = location.hash.replace("#", "");
+  const onPlay = h === "play";
+  document.getElementById("home").hidden = onPlay;
+  document.getElementById("playpage").hidden = !onPlay;
+  if (h === "how") document.getElementById("how").scrollIntoView();
+  else window.scrollTo(0, 0);
+}
+matchMedia("(pointer:fine)").matches&&document.querySelector(".hero").addEventListener("pointermove",e=>{const r=e.currentTarget.getBoundingClientRect();e.currentTarget.style.setProperty("--mx",(e.clientX-r.left)+"px");e.currentTarget.style.setProperty("--my",(e.clientY-r.top)+"px")});
+addEventListener("hashchange", route);
+route();
+
+(async () => {
+  (function(){const $=i=>document.getElementById(i),PRE={groq:["https://api.groq.com/openai/v1/chat/completions","llama-3.3-70b-versatile"],gemini:["https://generativelanguage.googleapis.com/v1beta/openai/chat/completions","gemini-2.5-flash"],worker:["",""]};
+  $("aiu").value=AI.url||"";$("aim").value=AI.model||"";$("aik").value=AI.key||"";if(AI.url)setAiStatus("AI replies on.");
+  document.querySelectorAll("#aicfg [data-p]").forEach(b=>b.onclick=()=>{const q=PRE[b.dataset.p];$("aiu").value=q[0];$("aim").value=q[1]});
+  $("ais").onclick=()=>{const u=$("aiu").value.trim();if(u&&!/^https:\/\//.test(u)){setAiStatus("The URL must start with https://");return}
+   AI=u?{url:u,model:$("aim").value.trim(),key:$("aik").value.trim()}:{};aiOff=0;try{localStorage.setItem("hl-ai",JSON.stringify(AI))}catch(e){}setAiStatus(u?"Saved. AI replies on.":"AI off.")};
+  $("aic").onclick=()=>{AI={};aiOff=0;try{localStorage.removeItem("hl-ai")}catch(e){}$("aiu").value=$("aim").value=$("aik").value="";setAiStatus("AI off. Scripted replies only.")};})();
+  loadCase("easy", false);
+})();
+</script>
+</body>
+</html>

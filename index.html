@@ -112,6 +112,8 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 .pills span b{color:var(--gold)}
 .card h3.good,.card h3.bad{display:inline-block;border:3px solid currentColor;padding:4px 14px;border-radius:6px;font-size:22px;transform:rotate(-3deg);animation:stamp .45s var(--ease) both}
 @keyframes stamp{from{opacity:0;transform:rotate(-3deg) scale(1.7)}}
+section.s.play{padding-top:16px}
+.rule summary{cursor:pointer;font-weight:600;color:var(--ink)}
 </style>
 </head>
 <body>
@@ -148,17 +150,15 @@ input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(-
 </div>
 
 <div id="playpage" hidden>
-<section class="s" id="play">
-  <a class="back" href="#top">← Back to home</a>
-  <h2>Today’s case</h2>
-  <p class="sub">Pick a difficulty. Everyone gets the same case at each level today, so don’t spoil it for your friends.</p>
-  <div class="rule"><b>Scoring:</b> 1 question per suspect = 100/100. 2 each = 80, 3 each = 60, and so on. Each hint costs 20 points and a wrong accusation fails the case. Stress meter: kind words calm a suspect, sharp questions raise it. Too much stress and they confess, even if innocent, and accusing a false confessor fails the case. Questions only (no actions), 50 words max each.</div>
-  <details class="rule" id="aicfg"><summary>Free AI replies (optional)</summary>
-<p>Scripted replies work with no setup. For AI replies, pick a free provider and paste your own free key, or point to your own Cloudflare worker. Settings stay in this browser. This only works on a copy you host yourself, and if the AI fails the game falls back to scripted replies.</p>
-<div class="row"><button class="g" data-p="groq">Groq</button><button class="g" data-p="gemini">Gemini</button><button class="g" data-p="worker">My worker</button></div>
-<div class="row"><input id="aiu" placeholder="Endpoint URL"><input id="aim" placeholder="Model (not needed for a worker)"><input id="aik" type="password" placeholder="Free API key (not needed for a worker)"></div>
-<div class="row"><button class="p" id="ais">Save</button><button class="g" id="aic">Turn off</button></div><div class="wc" id="aist"></div></details>
-<div id="diffbar"></div><div id="game"></div>
+<section class="s play" id="play">
+  <div id="game"></div>
+  <details class="rule"><summary>Scoring and rules</summary><p><b>Scoring:</b> 1 question per suspect = 100/100, 2 each = 80, 3 each = 60, and so on. Each hint costs 20 points and a wrong accusation fails the case. <b>Stress:</b> kind words calm a suspect, sharp questions raise it. Too much stress and they confess, even if innocent, and accusing a false confessor fails the case. <b>Talk only:</b> no actions, 50 words max per message.</p></details>
+</section>
+</div>
+<div id="morepage" hidden>
+<section class="s play" id="more">
+  <h2>Play more cases</h2>
+  <div id="morebox"></div>
 </section>
 </div>
 
@@ -208,57 +208,32 @@ function genCase(id){
  sus[W]={name:wit,role:roles[1],liar:false,priv:`At about ${tm} you were near the ${X.sd} and saw ${liar} hurry past carrying ${cr.ob}, heading away from the ${X.sc}. `+(di==3?`You are only about 70% sure it was them, so hedge with "I think". If the detective is harsh or pushy you clam up and refuse to say more; if kind and patient you share what you saw. `:`You are sure of what you saw. `)+`Only mention it if asked about the ${X.sd}, who you saw, or what happened around ${t1}. Secret (reveal only if pressed): ${sec[0]}.`+ev};
  sus[F]={name:ref,role:roles[2],liar:false,priv:cl.rf+` Secret (reveal only if pressed): ${sec[1]}.`+ev};
  for(let i=3;i<n;i++)sus[perm[i]]={name:nm[perm[i]],role:roles[i],liar:false,priv:(i==3&&di>=2?`At ${t1} you were ${bz[i]}. You also quietly walked past the ${X.sd} at ${f(T-10)} on an embarrassing errand and deny it unless pressed hard. `:`At ${t1} you were ${bz[i]}, with nothing to hide about the crime. `)+`Secret (reveal only if pressed): ${sec[i]}.`+ev};
- const cv=t=>t.replace(/\byou are\b/g,"I am").replace(/\byou were\b/g,"I was").replace(/\byour\b/g,"my").replace(/\byou\b/g,"I");
- const rfs=[`The ${f(T-20)} ${mt} meeting? I cancelled it at ${f(T-35)} because the host fell ill, and I emailed everyone.`,`${liar}'s chair was empty and the coat was gone from ${f(T-5)} to ${f(T+30)}. I sit right next to them.`,`I run the car park gate. ${liar}'s car came in at ${f(T-25)}, well before it happened.`];
- const kws=[/meeting|cancel|room b|budget|planning|safety|staff/,/desk|call|client|chair|coat/,/car|park|traffic|arriv|gate/],ci=CL.indexOf(cl);
- sus[L].say={kind:"liar",alibi:cv(cl.c)+".",deny:di==4?`I passed the ${X.sc} earlier on normal business, that's all.`:`I never went near the ${X.sd}.`};
- sus[W].say={kind:"wit",sight:di==3?`I think I saw ${liar} hurrying past with ${cr.ob}, heading away from the ${X.sc}. I'm not completely sure.`:`I saw ${liar} hurry past with ${cr.ob}, heading away from the ${X.sc} around ${tm}.`,alibi:`I was near the ${X.sd} around then.`,sec:cv(sec[0])};
- sus[F].say={kind:"ref",fact:rfs[ci],kw:kws[ci].source,alibi:"I was doing my usual work at the time.",sec:cv(sec[1])};
- for(let i=3;i<n;i++)sus[perm[i]].say={kind:"by",alibi:`At ${t1} I was ${bz[i]}.`,sec:cv(sec[i]),herring:i==3&&di>=2,errand:`Okay, I walked past the ${X.sd} around ${f(T-10)} on a private errand. That's all it was.`};
- const kwd=(X.sd+" "+X.sc).split(" ").filter(w=>w.length>3&&!["back","room","floor","office","east","vault"].includes(w));
  return {id,difficulty:dk,sd:X.sd,title:fill(cr.ti),intro:fill(cr.ev)+`. ${n} people had access. One of them is lying.`,pub:fill(cr.ev)+`. The ${X.sc} is next to the ${X.sd}.`,
   hints:[`Ask everyone exactly where they were at ${t1}.`,`Someone may have seen another person near the ${X.sd}. Ask about it, and check any alibi that involves a meeting, a call or a record.`],
-  kwd,liar,suspects:sus,truth:`${liar} claimed ${cl.c.replace(/^you were/,"they were")}, but ${cl.tr}, as ${ref} confirms. ${wit} saw ${liar} near the ${X.sd} with ${cr.ob} at ${tm}.`};
+  suspects:sus,truth:`${liar} claimed ${cl.c.replace(/^you were/,"they were")}, but ${cl.tr}, as ${ref} confirms. ${wit} saw ${liar} near the ${X.sd} with ${cr.ob} at ${tm}.`};
 }
-const AI_URL="https://hushlightai.cs8ydgh69d.workers.dev"; // paste your Cloudflare Worker URL here to add free AI replies; leave empty for scripted only
-let aiOff=0;
-let AI={};try{AI=JSON.parse(localStorage.getItem("hl-ai"))||{}}catch(e){}
-if(!AI.url&&AI_URL)AI={url:AI_URL};
-function setAiStatus(t){const e=document.getElementById("aist");if(e)e.textContent=t}
+const AI_URL="https://hushlightai.cs8ydgh69d.workers.dev";
 async function llm(prompt){
- if(!AI.url||Date.now()<aiOff)return null;
- try{
-  const oa=!!AI.key,r=await fetch(AI.url,{method:"POST",headers:oa?{"content-type":"application/json",authorization:"Bearer "+AI.key}:{"content-type":"application/json"},body:JSON.stringify(oa?{model:AI.model,messages:[{role:"user",content:prompt}],max_tokens:120}:{prompt})});
-  if(!r.ok)throw 0;const o=await r.json();return(oa?o.choices[0].message.content:o.text)||null
- }catch(e){aiOff=Date.now()+600000;setAiStatus("AI unavailable, using scripted replies for now.");return null}
+ try{const ac=new AbortController(),to=setTimeout(()=>ac.abort(),25000);
+  const r=await fetch(AI_URL,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({prompt}),signal:ac.signal});clearTimeout(to);
+  if(!r.ok)throw 0;const o=await r.json();return o.text||null}catch(e){return null}
 }
-function script(c,s,text,st,asked){
- const t=text.toLowerCase(),y=s.say,by=y.kind,di=c.difficulty,rnd=a=>a[Math.floor(Math.random()*a.length)],nm=c.liar.toLowerCase().split(" ");
- const kind=/relax|calm|sorry|thank|please|take your time|appreciate|it'?s ok|no rush/.test(t),hi=/^(hi|hello|hey|good (morning|afternoon|evening))\b/.test(t),
-  mean=/idiot|stupid|shut up|kill|hurt|threat|or else|jail|prison|arrest|make you/.test(t),accuse=/liar|lying|\blie\b|confess|admit|you did it|guilty|know you did/.test(t),
-  loc=c.kwd.some(w=>t.includes(w)),carry=/tube|bag|laptop|envelope|marker|coat|towel|carry|carrying/.test(t),
-  sight=/\bsee\b|\bsaw\b|notice|witness|anyone|anybody|suspicious|hear|carry|carrying/.test(t)||nm.some(w=>new RegExp("\\b"+w+"\\b").test(t)),
-  where=/where|alibi|doing|during|whereabouts|\d\s?(am|pm)|when the|at that time/.test(t),press=/secret|hiding|hide|nervous|honest|truth|really/.test(t);
- const confront=by==="liar"&&loc&&carry;
- let d=hi?-5:2; if(kind&&!where&&!loc&&!sight&&!accuse)d=-8; else if(confront)d=32; else if(mean)d=16; else if(accuse)d=12; else if(where)d=6;
- const evasive=(k,line)=>{if((di==="hard"||di==="impossible")&&by!=="liar"){s._d=s._d||{};if(!s._d[k]){s._d[k]=1;return rnd(["Why do you ask?","Why does that matter?","Hm. What are you getting at?"])}}return line};
- const small=/shirt|weather|favou?rite|how are you|joke|think about|nice|haircut|pretty|cute|love your|like your/.test(t),smalltalk=rnd(["Ha. That's a bit random, detective. Shall we get back to the case?","I'm not sure what my opinion has to do with this.","Sure, if you say so. What do you actually want to ask me?"]);
- const gen=small?smalltalk:rnd(["I'm not sure what you're asking. Try asking about that time.","Can you be more specific?","I don't know much about that."]);
- let r;
- if(mean)r=by==="wit"&&di==="very hard"?"I can't... I'm not sure of anything now.":rnd(["I'm calling security if you keep that up.","Back off. I'm not answering that.","Watch your tone, detective."]);
- else if(confront)r=rnd(["That's... that's not what happened.","Who told you that? That's a lie.","I don't know what you're talking about."]);
- else if(y.sec&&press&&(st>=40||asked>=3))r="Fine. "+y.sec[0].toUpperCase()+y.sec.slice(1)+". Happy now?";
- else if((kind||hi)&&!where&&!loc&&!sight)r=rnd(["Thanks. Ask me whatever you need.","Okay. I'll help if I can."]);
- else if(by==="liar")r=accuse?rnd(["That's absurd. I've told you where I was.","Careful with accusations, detective."]):(loc||sight)?y.deny:where?y.alibi:small?gen:rnd(["I've been completely straight with you.","Is there something specific you want to know?"]);
- else if(by==="wit")r=di==="very hard"&&accuse?"I... I don't want to say anything else.":(loc||sight)?evasive("s",y.sight):where?y.alibi:gen;
- else if(by==="ref")r=(new RegExp(y.kw).test(t)||sight)?evasive("f",y.fact):where?y.alibi:gen;
- else r=(loc&&y.herring)?((st>=35||(s._h=(s._h||0)+1)>1)?y.errand:"I didn't go anywhere near there."):(loc||sight)?"I didn't see anything useful.":where?y.alibi:gen;
- if(r!==y.errand&&!mean)r=(st>=60?rnd(["Why are you pressing me? ","I— okay. ","Stop. Just— "]):st>=30?rnd(["Honestly? ","Listen. ","Look. ",""]):"")+r;
- return {delta:d,text:r};
-}
-function buildBar(){const b=document.getElementById("diffbar");b.replaceChildren();DIFFS.forEach(([d])=>{const x=el("button",d===DIFF?"p":"g",d[0].toUpperCase()+d.slice(1));x.style.margin="0 6px 8px 0";x.onclick=()=>loadCase(d,false);b.append(x)})}
-function loadCase(d,random){DIFF=d;isDaily=!random;const di=DIFFS.findIndex(x=>x[0]===d);caseNo=di*2000+1+(random?Math.floor(Math.random()*2000):(DAY*7919+di*131)%2000);CASES[0]=genCase(caseNo);buildBar();reset(0)}
-const game = document.getElementById("game");
+function dailyDiff(){return DIFFS[Math.floor(rng(DAY+77)()*5)][0]}
+let dailyFlag=false;
+function dailyDone(){try{return dailyFlag||localStorage.getItem("hl-done")===String(DAY)}catch(e){return dailyFlag}}
+function markDaily(){dailyFlag=true;try{localStorage.setItem("hl-done",String(DAY))}catch(e){}}
+function loadCase(d,random){
+ if(d==="random")d=DIFFS[Math.floor(Math.random()*5)][0];
+ DIFF=d;isDaily=!random;const di=DIFFS.findIndex(x=>x[0]===d);
+ caseNo=di*2000+1+(random?Math.floor(Math.random()*2000):(DAY*7919+di*131)%2000);
+ CASES[0]=genCase(caseNo);reset(0)}
+function buildMore(){
+ const b=document.getElementById("morebox");b.replaceChildren();
+ if(!dailyDone()){b.append(el("p","sub","Finish today’s case first. Then you can play as many extra cases as you like."));const g=el("a","btn","Go to today’s case");g.href="#play";b.append(g);return}
+ b.append(el("p","sub","Pick a level, or let fate decide."));
+ const g=el("div","acc");
+ DIFFS.forEach(([d,n])=>{const x=el("button","g",d[0].toUpperCase()+d.slice(1)+", "+n+" suspects");x.onclick=()=>{loadCase(d,true);location.hash="play"};g.append(x)});
+ const r=el("button","p","Random difficulty");r.onclick=()=>{loadCase("random",true);location.hash="play"};g.append(r);b.append(g)}
 
 function getStreak(){ try { return JSON.parse(localStorage.getItem("alibi-streak")) || {last:-1,n:0}; } catch(e){ return {last:-1,n:0}; } }
 function saveStreak(win){
@@ -274,7 +249,7 @@ function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.c
 function avatar(i, name){ const a = el("div", "av", name[0]); a.style.background = COLORS[i % 6]; return a; }
 
 const MAXW = 50;
-let refocus = false;
+let refocus = false, notice = "", retryText = "";
 function wc(t){ const m = t.trim().match(/\S+/g); return m ? m.length : 0; }
 function badAction(t){ return /\[[^\]]*\]|\*[^*]+\*|\([^)]*\)/.test(t); }
 function mood(v, conf){ return conf ? "😭" : v < 15 ? "😊" : v < 30 ? "🙂" : v < 45 ? "😐" : v < 60 ? "😟" : v < 75 ? "😰" : "😨"; }
@@ -319,11 +294,11 @@ function render(){
   game.replaceChildren();
 
   const st = el("div", "stats");
-  [ "Case #" + caseNo, DIFF[0].toUpperCase() + DIFF.slice(1), qs + " question" + (qs === 1 ? "" : "s"), "💡 " + hints + "/2 hints", "🎯 score now: " + score(), "🔥 streak " + getStreak().n ].forEach(t => st.append(el("span", "", t)));
+  [ (isDaily ? "Today’s case" : "Practice") + " #" + caseNo, DIFF[0].toUpperCase() + DIFF.slice(1), qs + " question" + (qs === 1 ? "" : "s"), "💡 " + hints + "/2 hints", "🎯 score now: " + score(), "🔥 streak " + getStreak().n ].forEach(t => st.append(el("span", "", t)));
   game.append(st);
 
   const file = el("div", "card file");
-  file.append(el("div", "tag", "Case file"), el("h3", "", c.title), el("div", "", c.intro));
+  file.append(el("div", "tag", "Case file: " + DIFF[0].toUpperCase() + DIFF.slice(1)), el("h3", "", c.title), el("div", "", c.intro));
   game.append(file);
 
   if (hints > 0) {
@@ -373,7 +348,10 @@ function render(){
     const send = () => { if (check() && !go.disabled) ask(inp.value); };
     go.onclick = send;
     inp.onkeydown = e => { if (e.key === "Enter") send(); };
-    row.append(inp, go); chat.append(row); chat.append(cnt); check();
+    if (retryText) { inp.value = retryText; retryText = ""; }
+    row.append(inp, go); chat.append(row); chat.append(cnt);
+    if (notice) { const nn = el("div", "wc", notice); nn.style.color = "var(--acc)"; chat.append(nn); }
+    check();
 
     const row2 = el("div", "row");
     const hb = el("button", "g", hints < 2 ? "💡 Hint (" + (2 - hints) + " left, −20 points)" : "No hints left");
@@ -411,8 +389,8 @@ function render(){
       try { await navigator.clipboard.writeText(result.share); cp.textContent = "Copied!"; }
       catch(e){ const rg = document.createRange(); rg.selectNodeContents(pre); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(rg); cp.textContent = "Selected, now copy"; }
     };
-    const nx = el("button", "g", "Practice another case");
-    nx.onclick = () => loadCase(DIFF, true);
+    const nx = el("button", "p", "Play more cases");
+    nx.onclick = () => { location.hash = "more"; };
     row.append(cp, nx); r.append(row); game.append(r);
   }
   const lg = document.getElementById("log"); if (lg) lg.scrollTop = lg.scrollHeight;
@@ -440,13 +418,15 @@ Conversation so far:
 ${history || "(none)"}
 Detective: ${text}
 Now output the STRESS line, then ${s.name}'s reply.`;
-  const sc = script(c, s, text, stress[active], asked[active]);
+  notice = "";
   const out = await llm(prompt);
-  if (!out) await new Promise(r => setTimeout(r, 500 + Math.random() * 500));
-  let po = out ? parseOut(out) : null;
-  if (!po || !po.text) po = sc; else if (po.delta == null) po.delta = sc.delta;
+  const po = out ? parseOut(out) : null;
+  if (!po || !po.text) {
+    L.splice(L.length - 2, 2); qs--; retryText = text; notice = s.name + " didn’t answer. Your question is still in the box, tap Ask to try again.";
+    busy = false; render(); return;
+  }
   reply.text = po.text.replace(new RegExp("^" + s.name + ":\\s*"), "").trim();
-  await applyStress(po.delta, text, reply, s);
+  await applyStress(po.delta == null ? 2 : po.delta, text, reply, s);
   busy = false; refocus = true; render();
 }
 
@@ -459,6 +439,7 @@ function accuse(i){
   else if (confessed[i]) reason = "You stressed the wrong person too much. " + nm + " was innocent, but the pressure got so high (" + pct + "% stress) that they confessed just to make it stop. A confession under pressure isn’t proof.";
   else if (stress[i] >= 60) reason = "You leaned hard on " + nm + " (" + pct + "% stress), but they were innocent. Being nervous isn’t the same as being guilty.";
   else reason = "You accused the wrong person. Look for a story that doesn’t add up, not just who sounds nervous.";
+  if (isDaily) markDaily();
   const stk = isDaily ? saveStreak(ok) : getStreak();
   result = {ok, sc, reason, share: "Hushlight #" + caseNo + " (" + DIFF + ") 🔍\n" + (ok ? "Solved in " : "Fooled after ") + qs + " question" + (qs === 1 ? "" : "s") + (hints ? " · 💡" + hints : "") + "\n" + (ok ? "Score: " + sc + "/100" : "❌ Case failed") + (stk.n > 1 ? "\n🔥 " + stk.n + "-day streak" : "")};
   finished = true; accusing = false; render();
@@ -466,9 +447,11 @@ function accuse(i){
 
 function route(){
   const h = location.hash.replace("#", "");
-  const onPlay = h === "play";
-  document.getElementById("home").hidden = onPlay;
+  const onPlay = h === "play", onMore = h === "more";
+  document.getElementById("home").hidden = onPlay || onMore;
   document.getElementById("playpage").hidden = !onPlay;
+  document.getElementById("morepage").hidden = !onMore;
+  if (onMore) buildMore();
   if (h === "how") document.getElementById("how").scrollIntoView();
   else window.scrollTo(0, 0);
 }
@@ -477,13 +460,7 @@ addEventListener("hashchange", route);
 route();
 
 (async () => {
-  (function(){const $=i=>document.getElementById(i),PRE={groq:["https://api.groq.com/openai/v1/chat/completions","llama-3.3-70b-versatile"],gemini:["https://generativelanguage.googleapis.com/v1beta/openai/chat/completions","gemini-2.5-flash"],worker:["",""]};
-  $("aiu").value=AI.url||"";$("aim").value=AI.model||"";$("aik").value=AI.key||"";if(AI.url)setAiStatus("AI replies on.");
-  document.querySelectorAll("#aicfg [data-p]").forEach(b=>b.onclick=()=>{const q=PRE[b.dataset.p];$("aiu").value=q[0];$("aim").value=q[1]});
-  $("ais").onclick=()=>{const u=$("aiu").value.trim();if(u&&!/^https:\/\//.test(u)){setAiStatus("The URL must start with https://");return}
-   AI=u?{url:u,model:$("aim").value.trim(),key:$("aik").value.trim()}:{};aiOff=0;try{localStorage.setItem("hl-ai",JSON.stringify(AI))}catch(e){}setAiStatus(u?"Saved. AI replies on.":"AI off.")};
-  $("aic").onclick=()=>{AI={};aiOff=0;try{localStorage.removeItem("hl-ai")}catch(e){}$("aiu").value=$("aim").value=$("aik").value="";setAiStatus("AI off. Scripted replies only.")};})();
-  loadCase("easy", false);
+  loadCase(dailyDiff(), false);
 })();
 </script>
 </body>

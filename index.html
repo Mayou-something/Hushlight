@@ -214,9 +214,14 @@ function genCase(id){
 }
 const AI_URL="https://hushlightai.cs8ydgh69d.workers.dev";
 async function llm(prompt){
- try{const ac=new AbortController(),to=setTimeout(()=>ac.abort(),25000);
-  const r=await fetch(AI_URL,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({prompt}),signal:ac.signal});clearTimeout(to);
-  if(!r.ok)throw 0;const o=await r.json();return o.text||null}catch(e){return null}
+ for(let i=0;i<2;i++){
+  try{const ac=new AbortController(),to=setTimeout(()=>ac.abort(),25000);
+   const r=await fetch(AI_URL,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({prompt}),signal:ac.signal});clearTimeout(to);
+   if(r.ok){const o=await r.json();if(o.text)return o.text}
+  }catch(e){}
+  if(i==0)await new Promise(r=>setTimeout(r,1500));
+ }
+ return null
 }
 function dailyDiff(){return DIFFS[Math.floor(rng(DAY+77)()*5)][0]}
 let dailyFlag=false;
